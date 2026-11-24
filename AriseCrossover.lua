@@ -1,6 +1,5 @@
 -- Arise Crossover Hub | Real Executor
--- Arquiteto Update (Nov 2026
-)
+-- Arquiteto Update (Nov 2026)
 
 local Players     = game:GetService("Players")
 local RunService  = game:GetService("RunService")
@@ -722,7 +721,8 @@ checkAE()
 makeButton(cfg,"Ativar Auto Execute",function()
     pcall(function()
         if not isfolder("autoexec") then makefolder("autoexec") end
-        writefile(AE_PATH,'loadstring(game:HttpGet("'..SCRIPT_URL..'"))()')
+        local content = "loadstring(game:HttpGet(" .. [["]] .. SCRIPT_URL .. [["]] .. "))()"
+        writefile(AE_PATH, content)
     end)
     checkAE()
 end,5,C.accent)
