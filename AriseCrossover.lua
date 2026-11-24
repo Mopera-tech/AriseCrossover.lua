@@ -1,5 +1,6 @@
 -- Arise Crossover Hub | Real Executor
--- Arquiteto Update (Nov 2026)
+-- Arquiteto Update (Nov 2026
+)
 
 local Players     = game:GetService("Players")
 local RunService  = game:GetService("RunService")
