@@ -167,20 +167,18 @@ local function killMobs(timeout)
     while tick() - t0 < timeout do
         if not S.AutoDungeon and not S.AutoFarm then break end
         local mob = getNearestMob()
-        if not mob then break end
+        if not mob then break end -- sala limpa
         local mhrp = mob:FindFirstChild("HumanoidRootPart")
         if mhrp then
             safeTP(mhrp.Position)
-            pcall(function()
-                fireRemote("Attack", mob)
-                fireRemote("DamageEnemy", mob)
-                fireRemote("Hit", mob)
-            end)
-            task.wait(0.3)
             local mhum = mob:FindFirstChild("Humanoid")
+            local t1 = tick()
+            while mhum and mhum.Health > 0 and tick()-t1 < 10 do
+                task.wait(0.05)
+            end
             if S.AutoArise and mhum and mhum.Health <= 0 then
                 pcall(function() fireRemote("Arise", mob) end)
-                task.wait(0.25)
+                task.wait(0.2)
             end
         end
         task.wait(0.05)
@@ -201,16 +199,14 @@ task.spawn(function()
                 local mhrp = mob:FindFirstChild("HumanoidRootPart")
                 if mhrp then
                     safeTP(mhrp.Position)
-                    pcall(function()
-                        fireRemote("Attack", mob)
-                        fireRemote("DamageEnemy", mob)
-                        fireRemote("Hit", mob)
-                    end)
-                    task.wait(0.3)
                     local mhum = mob:FindFirstChild("Humanoid")
+                    local t1 = tick()
+                    while mhum and mhum.Health > 0 and tick()-t1 < 10 do
+                        task.wait(0.05)
+                    end
                     if S.AutoArise and mhum and mhum.Health <= 0 then
                         pcall(function() fireRemote("Arise", mob) end)
-                        task.wait(0.25)
+                        task.wait(0.2)
                     end
                 end
             end
@@ -804,6 +800,95 @@ makeToggle(dung,"Auto Eclipse Court",     "AutoEclipse",   7)
 makeToggle(dung,"Auto Arquiteto",         "AutoArquiteto", 8)
 sectionLabel(dung,"Rank Alvo",9)
 makeDropdown(dung,"Rank →",RANKS,"TargetRank",10)
+
+-- tabela de ranks
+local rankFrame = Instance.new("Frame", dung)
+rankFrame.Size             = UDim2.new(1,0,0,210)
+rankFrame.BackgroundColor3 = C.item
+rankFrame.BorderSizePixel  = 0
+rankFrame.LayoutOrder      = 11
+Instance.new("UICorner",rankFrame).CornerRadius = UDim.new(0,7)
+Instance.new("UIStroke",rankFrame).Color = C.border
+
+local rankTitle = Instance.new("TextLabel",rankFrame)
+rankTitle.Size               = UDim2.new(1,0,0,24)
+rankTitle.Position           = UDim2.new(0,0,0,0)
+rankTitle.BackgroundTransparency = 1
+rankTitle.Text               = "  TABELA DE RANKS"
+rankTitle.TextColor3         = C.accentDim
+rankTitle.TextSize           = 10
+rankTitle.Font               = Enum.Font.GothamBold
+rankTitle.TextXAlignment     = Enum.TextXAlignment.Left
+
+local rankScroll = Instance.new("ScrollingFrame",rankFrame)
+rankScroll.Size                   = UDim2.new(1,0,1,-26)
+rankScroll.Position               = UDim2.new(0,0,0,26)
+rankScroll.BackgroundTransparency = 1
+rankScroll.BorderSizePixel        = 0
+rankScroll.ScrollBarThickness     = 3
+rankScroll.ScrollBarImageColor3   = C.border
+rankScroll.CanvasSize             = UDim2.new(0,0,0,0)
+rankScroll.AutomaticCanvasSize    = Enum.AutomaticSize.Y
+
+local rankGrid = Instance.new("UIGridLayout",rankScroll)
+rankGrid.CellSize    = UDim2.new(0.5,-6,0,28)
+rankGrid.CellPadding = UDim2.new(0,4,0,4)
+rankGrid.SortOrder   = Enum.SortOrder.LayoutOrder
+
+local uiPad = Instance.new("UIPadding",rankScroll)
+uiPad.PaddingLeft  = UDim.new(0,6)
+uiPad.PaddingRight = UDim.new(0,6)
+uiPad.PaddingTop   = UDim.new(0,4)
+
+local RANK_COLORS = {
+    E  = Color3.fromRGB(150,150,150),
+    D  = Color3.fromRGB(100,180,100),
+    C  = Color3.fromRGB(100,160,220),
+    B  = Color3.fromRGB(160,100,220),
+    A  = Color3.fromRGB(220,180,60),
+    S  = Color3.fromRGB(220,120,40),
+    SS = Color3.fromRGB(220,60,60),
+    G  = Color3.fromRGB(80,200,220),
+    GM = Color3.fromRGB(60,220,180),
+    N  = Color3.fromRGB(180,60,220),
+    ["N+"]   = Color3.fromRGB(200,80,240),
+    HSR      = Color3.fromRGB(240,160,40),
+    ["HSR+"] = Color3.fromRGB(255,180,60),
+    UGM      = Color3.fromRGB(80,160,255),
+    MR       = Color3.fromRGB(255,80,120),
+    ["MR+"]  = Color3.fromRGB(255,100,140),
+    GR       = Color3.fromRGB(255,200,80),
+    ["GR+"]  = Color3.fromRGB(255,215,100),
+    GL       = Color3.fromRGB(180,255,180),
+    ["GL+"]  = Color3.fromRGB(200,255,200),
+}
+
+for i, rank in ipairs(RANKS) do
+    local cell = Instance.new("TextButton",rankScroll)
+    cell.Size             = UDim2.new(0,1,0,1) -- grid cuida do tamanho
+    cell.BackgroundColor3 = Color3.fromRGB(18,18,26)
+    cell.BorderSizePixel  = 0
+    cell.Text             = rank
+    cell.TextColor3       = RANK_COLORS[rank] or C.text
+    cell.TextSize         = 12
+    cell.Font             = Enum.Font.GothamBold
+    cell.LayoutOrder      = i
+    cell.AutoButtonColor  = false
+    Instance.new("UICorner",cell).CornerRadius = UDim.new(0,5)
+    -- clique seleciona o rank
+    cell.MouseButton1Click:Connect(function()
+        S.TargetRank = rank
+        -- atualiza visual de todas as cells
+        for _, c in ipairs(rankScroll:GetChildren()) do
+            if c:IsA("TextButton") then
+                c.BackgroundColor3 = c.Text == rank
+                    and Color3.fromRGB(30,30,45)
+                    or  Color3.fromRGB(18,18,26)
+            end
+        end
+    end)
+end
+
 sectionLabel(dung,"Ações Rápidas",11)
 makeButton(dung,"→ Entrar na Dungeon",function()
     local g = findPart({"dungeongate","gate","portal"})
