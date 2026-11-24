@@ -88,10 +88,10 @@ local function getNearestMob()
     return best
 end
 
-local function fireRemote(name,...)
+local function fireRemote(name, arg1, arg2)
     for _,v in ipairs(RS:GetDescendants()) do
         if v.Name==name and v:IsA("RemoteEvent") then
-            pcall(function() v:FireServer(...) end); return true
+            pcall(function() v:FireServer(arg1, arg2) end); return true
         end
     end
 end
