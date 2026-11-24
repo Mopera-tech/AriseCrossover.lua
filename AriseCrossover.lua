@@ -781,7 +781,7 @@ end
 -- ══════════════════════════════════════════════════════
 
 -- ── FARM ──
-local farm = addTab("Farm","⚔️",1)
+local farm = addTab("Farm","🗡",1)
 sectionLabel(farm,"Combate",1)
 makeToggle(farm,"Auto Farm",          "AutoFarm",   2)
 makeToggle(farm,"Auto Arise",         "AutoArise",  3)
@@ -793,7 +793,7 @@ makeToggle(farm,"Coletar AFK",        "AutoCollectAFK",8)
 makeToggle(farm,"Anti-AFK",           "AntiAFK",    9)
 
 -- ── DUNGEON ──
-local dung = addTab("Dungeon","🏰",2)
+local dung = addTab("Dungeon","🔮",2)
 sectionLabel(dung,"Masmorras",1)
 makeToggle(dung,"Auto Dungeon",           "AutoDungeon",   2)
 makeToggle(dung,"Auto Rank Up",           "AutoRankUp",    3)
@@ -827,7 +827,7 @@ makeButton(dung,"→ Heavenly Castle",function()
 end,16)
 
 -- ── RAID ──
-local raid = addTab("Raid","💀",3)
+local raid = addTab("Raid","☠",3)
 sectionLabel(raid,"Raids",1)
 makeToggle(raid,"Auto Raid",          "AutoRaid",        2)
 makeToggle(raid,"Trick or Treat Gate","AutoTrickOrTreat",3)
@@ -847,7 +847,7 @@ makeButton(raid,"→ Pumpkin King",function()
 end,8)
 
 -- ── TELEPORT ──
-local tp = addTab("Teleport","🔀",4)
+local tp = addTab("Teleport","📍",4)
 sectionLabel(tp,"Mobs & Dungeons",1)
 makeButton(tp,"→ Mob mais próximo",function()
     local mob = getNearestMob()
@@ -894,7 +894,7 @@ for i, isl in ipairs(islands) do
 end
 
 -- ── MISC ──
-local misc = addTab("Misc","⚙️",5)
+local misc = addTab("Misc","🛠",5)
 sectionLabel(misc,"Movimento",1)
 makeToggle(misc,"Noclip",    "Noclip",    2)
 makeToggle(misc,"Speed Hack","SpeedHack", 3)
@@ -915,7 +915,7 @@ makeButton(misc,"Print Remotes",function()
 end,8)
 
 -- ── SETTINGS ──
-local set = addTab("Config","⚡",6)
+local set = addTab("Config","⚙",6)
 sectionLabel(set,"Keybind",1)
 local keyBtn = makeButton(set,"Tecla: RightShift",function() end,2)
 local listening = false
@@ -956,5 +956,50 @@ UIS.InputBegan:Connect(function(inp,gpe)
         win.Visible = not win.Visible
     end
 end)
+
+
+-- ══════════════════════════════════════════════════════
+--  AUTO EXECUTE
+-- ══════════════════════════════════════════════════════
+local AUTO_EXEC_PATH = "autoexec/AriseCrossover.lua"
+local SCRIPT_URL = "https://raw.githubusercontent.com/Mopera-tech/AriseCrossover.lua/refs/heads/main/AriseCrossover.lua"
+
+sectionLabel(set,"Auto Execute",5)
+local aeStatus = Instance.new("TextLabel", set)
+aeStatus.Size               = UDim2.new(1,0,0,24)
+aeStatus.BackgroundTransparency = 1
+aeStatus.TextSize           = 11
+aeStatus.Font               = Enum.Font.Gotham
+aeStatus.TextXAlignment     = Enum.TextXAlignment.Left
+aeStatus.LayoutOrder        = 6
+
+local function checkAE()
+    local ok = pcall(function() return isfile(AUTO_EXEC_PATH) end)
+    if ok and isfile(AUTO_EXEC_PATH) then
+        aeStatus.Text      = "  ✔ Auto Execute: ATIVO"
+        aeStatus.TextColor3 = C.accent
+    else
+        aeStatus.Text      = "  ✖ Auto Execute: INATIVO"
+        aeStatus.TextColor3 = C.red
+    end
+end
+checkAE()
+
+makeButton(set,"Ativar Auto Execute", function()
+    local ok, err = pcall(function()
+        if not isfolder("autoexec") then makefolder("autoexec") end
+        local scriptContent = 'loadstring(game:HttpGet("'..SCRIPT_URL..'"  ))()' 
+        writefile(AUTO_EXEC_PATH, scriptContent)
+    end)
+    checkAE()
+end, 7)
+
+makeButton(set,"Desativar Auto Execute", function()
+    pcall(function()
+        if isfile(AUTO_EXEC_PATH) then delfile(AUTO_EXEC_PATH) end
+    end)
+    checkAE()
+end, 8)
+
 
 print("[Arise Hub] Carregado | "..tostring(S.OpenKey.Name).." pra abrir/fechar")
